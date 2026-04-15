@@ -32,40 +32,45 @@ All workflows follow the same pattern — add your own by copying an existing on
 
 ## Quick start
 
-**Prerequisites:** LAMMPS with MACE support. See the [MACE docs](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) (`mliap` interface) or the [Symmetrix docs](https://github.com/ACEsuit/lammps) (native C++ interface). See [`docs/hpc_setup.md`](docs/hpc_setup.md) for HPC-specific tips.
+**Prerequisites:** LAMMPS with MACE support. See the [MACE docs](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) and setup with [mliap](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html) (GPU) or [Symmetrix](https://github.com/ACEsuit/lammps) (GPU or CPU).
 
-### 1. Write a model config (2–3 lines)
+### 1. Clone the repo
 
 ```bash
-cat > model_configs/mliap/my-model-C-D3.txt << 'EOF'
-# Atom types: 1=C
+git clone https://github.com/your-username/lammps-ML-workflows.git
+cd lammps-ML-workflows
+```
+
+### 2. Write a model config to e.g. `model_configs/mliap/my-model-CHO-D3.txt`
+
+```bash
+# Atom types: 1=C, 2=H, 3=O
 pair_style    hybrid/overlay mliap unified /path/to/model-mliap_lammps.pt 0 dispersion/d3 bj pbe 10.0 8.0
-pair_coeff    * * mliap C
-pair_coeff    * * dispersion/d3 C
-EOF
+pair_coeff    * * mliap C H O
+pair_coeff    * * dispersion/d3 C H O
 ```
 
 Replace `/path/to/...` with your model file. That's the only system-specific thing you need to edit.
 
-### 2. Generate scripts
+### 3. Run a parameter sweep
+
+Edit the config block at the top of the example sweep script, then run it:
 
 ```bash
 cd workflows/nvt-md
-bash generate.sh \
-  --model-config ../../model_configs/mliap/my-model-C-D3.txt \
-  --structure /path/to/my_structure.data \
-  --temperature 300 \
-  --run-ps 100
+bash example_temperature_sweep.sh
 ```
 
-### 3. Submit
+This calls `generate.sh` once per parameter value, writing a separate output directory for each.
+
+### 4. Submit
 
 ```bash
-cd nvt_my_structure_300K/
-./submit.sh
+cd runs/temperature_sweep/nvt_my_structure_300K/
+./launch_all_runs.sh
 ```
 
-For a parameter sweep (e.g. temperature series), see the `examples/` folder inside each workflow.
+To generate scripts for a single set of parameters instead of a sweep, call `generate.sh` directly — see the Usage section in each workflow's README.
 
 ---
 
