@@ -13,6 +13,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FIXTURES="${REPO_ROOT}/tests/fixtures"
 MOCK_MODEL="${FIXTURES}/mock_model.txt"
 MOCK_STRUCTURE="${FIXTURES}/minimal.data"
+TMPDIR="${REPO_ROOT}/tests/tmp"
+
+rm -rf "${TMPDIR}"
+mkdir -p "${TMPDIR}"
 
 PASS=0
 FAIL=0
@@ -69,9 +73,6 @@ while IFS= read -r -d '' script; do
 done < <(find "${REPO_ROOT}" -name "*.sh" -not -path "*/\.*" -print0)
 
 # ---- Test 2 & 3: generate.sh dry-runs -----------------------------------
-
-TMPDIR="$(mktemp -d)"
-trap 'rm -rf "${TMPDIR}"' EXIT
 
 # --- NVT MD ---
 
