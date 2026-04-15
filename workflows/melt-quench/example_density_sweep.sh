@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# density_sweep.sh — Melt-quench across a range of target densities.
-# Edit the configuration block, then: bash examples/density_sweep.sh
+# example_density_sweep.sh — Melt-quench across a range of target densities.
+# Edit the configuration block, then: bash example_density_sweep.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GEN="${SCRIPT_DIR}/../generate.sh"
+GEN="${SCRIPT_DIR}/generate.sh"
 
 # ---- Configuration --------------------------------------------------
 MODEL_CONFIG="${SCRIPT_DIR}/../../../model_configs/mliap/mace-mp-0b3-medium-C-D3.txt"

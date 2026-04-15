@@ -90,7 +90,7 @@ done
 T_START="${T_START:-${T_TARGET}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LMP_TPL="${SCRIPT_DIR}/templates/npt.lmp"
+LMP_TPL="${SCRIPT_DIR}/npt_template.lmp"
 [[ -f "${LMP_TPL}" ]] || { echo "ERROR: template not found: ${LMP_TPL}" >&2; exit 1; }
 
 MODEL_BLOCK="$(cat "${MODEL_CONFIG}")"

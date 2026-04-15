@@ -33,6 +33,16 @@ Useful for: equilibrating experimental structures, pressure sweeps, finding equi
 
 ## Usage
 
+Edit the config block at the top of `example_pressure_sweep.sh`, then run:
+
+```bash
+bash example_pressure_sweep.sh
+```
+
+This calls `generate.sh` once per pressure in your sweep, writing a separate output directory for each.
+
+To generate a single run directly:
+
 ```bash
 bash generate.sh \
   --model-config ../../model_configs/mliap/my-model-D3.txt \
@@ -41,10 +51,6 @@ bash generate.sh \
   --p-target 1.0 \
   --ramp-ps 10 \
   --run-ps 100 \
-  --dt-fs 1.0
-```
-
-For a pressure sweep:
-```bash
-bash examples/pressure_sweep.sh
+  --dt-fs 1.0 \
+  --n-runs 3   # optional: independent replicates with different seeds
 ```

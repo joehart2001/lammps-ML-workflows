@@ -93,7 +93,7 @@ done
 [[ "${N_RUNS}" =~ ^[1-9][0-9]*$ ]] || { echo "ERROR: --n-runs must be a positive integer" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LMP_TPL="${SCRIPT_DIR}/templates/melt-quench.lmp"
+LMP_TPL="${SCRIPT_DIR}/melt-quench_template.lmp"
 [[ -f "${LMP_TPL}" ]] || { echo "ERROR: template not found: ${LMP_TPL}" >&2; exit 1; }
 
 MODEL_BLOCK="$(cat "${MODEL_CONFIG}")"

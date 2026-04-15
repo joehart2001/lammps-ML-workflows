@@ -63,6 +63,8 @@ create_atoms    1 box
 mass            1 ${mass_amu}
 
 #==== define model ====#
+# DO NOT EDIT — pair_style and pair_coeff are injected here automatically
+# by generate.sh from your --model-config file. See model_configs/ for examples.
 pair_style
 pair_coeff
 #======================#

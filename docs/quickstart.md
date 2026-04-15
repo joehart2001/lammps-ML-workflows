@@ -39,58 +39,47 @@ Replace `/path/to/...` with the actual path on your cluster. That's the only sys
 
 ## Step 4: Generate and submit
 
-### NVT MD (most common)
+Each workflow includes an example sweep script. Edit the config block at the top and run it:
 
 ```bash
 cd workflows/nvt-md
+bash example_temperature_sweep.sh
+```
 
+This calls `generate.sh` once per parameter value, writing a separate output directory for each. Each directory contains SLURM scripts and a `launch_all_runs.sh` to submit everything at once.
+
+To generate scripts for a single set of parameters:
+
+```bash
+# NVT MD
+cd workflows/nvt-md
 bash generate.sh \
   --model-config ../../model_configs/mliap/my-model-D3.txt \
   --structure /path/to/structure.data \
-  --temperature 300 \
-  --run-ps 100
+  --temperature 300 --run-ps 100
 
-cd nvt_structure_300K_100ps/run_1/
-./submit.sh
-```
-
-### NPT MD
-
-```bash
+# NPT MD
 cd workflows/npt-md
-
 bash generate.sh \
   --model-config ../../model_configs/mliap/my-model-D3.txt \
   --structure /path/to/structure.data \
-  --t-target 300 --p-target 1.0 \
-  --ramp-ps 10 --run-ps 100
-```
+  --t-target 300 --p-target 1.0 --ramp-ps 10 --run-ps 100
 
-### Melt-quench (generate amorphous structure)
-
-```bash
+# Melt-quench
 cd workflows/melt-quench
-
 bash generate.sh \
   --model-config ../../model_configs/mliap/my-model-D3.txt \
   --element C --mass 12.011 --rho 2.0 \
   --t-melt 8000 --t-final 300 \
-  --supercell 10 --dt-fs 0.5 --seed 10001 --n-runs 3
+  --supercell 10 --dt-fs 0.5 --n-runs 3
 ```
 
----
-
-## Parameter sweeps
-
-Each workflow has an `examples/` directory with ready-to-run sweep scripts. Edit the configuration block at the top and run:
+Then submit:
 
 ```bash
-bash workflows/nvt-md/examples/temperature_sweep.sh
-bash workflows/npt-md/examples/pressure_sweep.sh
-bash workflows/melt-quench/examples/density_sweep.sh
+cd <output-dir>/
+./launch_all_runs.sh
 ```
-
-Each sweep generates a directory per parameter value, each with `run_i/` subdirectories and a `launch_all_runs.sh` to submit everything at once.
 
 ---
 

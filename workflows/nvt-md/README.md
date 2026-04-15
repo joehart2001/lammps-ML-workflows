@@ -26,23 +26,24 @@ NVT molecular dynamics from any LAMMPS data file.
 
 ## Usage
 
+Edit the config block at the top of `example_temperature_sweep.sh`, then run:
+
+```bash
+bash example_temperature_sweep.sh
+```
+
+This calls `generate.sh` once per temperature in your sweep, writing a separate output directory for each.
+
+To generate a single run directly:
+
 ```bash
 bash generate.sh \
   --model-config ../../model_configs/mliap/my-model-D3.txt \
   --structure /path/to/structure.data \
   --temperature 300 \
   --run-ps 100 \
-  --dt-fs 1.0
-```
-
-For a temperature sweep:
-```bash
-bash examples/temperature_sweep.sh
-```
-
-For multiple independent replicates (different random seeds):
-```bash
-bash generate.sh ... --n-runs 5 --seed 10001
+  --dt-fs 1.0 \
+  --n-runs 3   # optional: independent replicates with different seeds
 ```
 
 ---

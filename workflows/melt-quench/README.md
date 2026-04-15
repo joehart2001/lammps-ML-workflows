@@ -32,6 +32,16 @@ A restart file is saved between stages so they can be submitted as dependent SLU
 
 ## Usage
 
+Edit the config block at the top of `example_density_sweep.sh`, then run:
+
+```bash
+bash example_density_sweep.sh
+```
+
+This calls `generate.sh` once per density in your sweep, writing a separate output directory for each.
+
+To generate a single run directly:
+
 ```bash
 bash generate.sh \
   --model-config ../../model_configs/mliap/mace-mp-0b3-medium-C-D3.txt \
@@ -41,7 +51,7 @@ bash generate.sh \
   --quench-rate 1000 \
   --supercell 10 \
   --dt-fs 0.5 \
-  --seed 10001 --n-runs 3
+  --n-runs 3   # optional: independent replicates with different seeds
 ```
 
 ---
