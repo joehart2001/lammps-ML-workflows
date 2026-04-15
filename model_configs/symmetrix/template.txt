@@ -1,0 +1,16 @@
+# Template for symmetrix/mace model config.
+# Copy this file, rename it, and fill in your model path and element list.
+#
+# Naming: <model-name>-<elements>[-D3|noD3].txt
+# Example: mace-mp-0b3-C-D3.txt
+#
+# Atom types: 1=EL1  2=EL2  ...   ← update to match your LAMMPS type definitions
+
+# --- With D3 dispersion ---
+pair_style    hybrid/overlay symmetrix/mace dispersion/d3 bj pbe 10.0 8.0
+pair_coeff    * * symmetrix/mace /path/to/model.json EL1 EL2
+pair_coeff    * * dispersion/d3 EL1 EL2
+
+# --- Without D3 dispersion (comment out the above, uncomment below) ---
+# pair_style    symmetrix/mace
+# pair_coeff    * * symmetrix/mace /path/to/model.json EL1 EL2

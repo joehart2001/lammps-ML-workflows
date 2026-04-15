@@ -1,0 +1,138 @@
+# melt-quench.lmp — Melt a random SC lattice and quench to T_FINAL.
+#
+# Stage A: NVT hold at T_MELT for MELT_PS ps
+# Stage B: NVT ramp T_MELT → T_FINAL at QUENCH_RATE K/ps
+# Stage C: NVT hold at T_FINAL for EQUI_PS ps, save restart
+#
+# Runtime variables:
+#   ELEMENT       chemical symbol (single letter, e.g. C, Fe)
+#   MASS          atomic mass (g/mol)
+#   RHO           target density (g/cc)
+#   N_SUPERCELLS  supercell repeat (NxNxN)
+#   T_MELT        melt temperature (K)
+#   T_FINAL       final temperature (K)
+#   MELT_PS       melt hold time (ps)
+#   QUENCH_RATE   quench rate (K/ps)
+#   EQUI_PS       equilibration hold at T_FINAL (ps)
+#   DT_FS         timestep (fs)
+#   SEED          RNG seed
+
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+newton          on
+
+variable  element      string  ${ELEMENT}
+variable  mass_amu     equal   ${MASS}
+variable  rho          equal   ${RHO}
+variable  n_sc         equal   ${N_SUPERCELLS}
+variable  T_melt       equal   ${T_MELT}
+variable  T_final      equal   ${T_FINAL}
+variable  melt_ps      equal   ${MELT_PS}
+variable  quench_rate  equal   ${QUENCH_RATE}
+variable  equi_ps      equal   ${EQUI_PS}
+variable  dt_fs        equal   ${DT_FS}
+variable  seed         equal   ${SEED}
+
+variable  dt           equal   ${dt_fs}*0.001
+variable  Tdamp        equal   ${dt}*100
+variable  n_melt       equal   ceil(${melt_ps}/${dt})
+variable  quench_ps    equal   ceil((${T_melt}-${T_final})/${quench_rate})
+variable  n_quench     equal   ceil(${quench_ps}/${dt})
+variable  n_equi       equal   ceil(${equi_ps}/${dt})
+variable  time_ps      equal   step*${dt}
+
+# Lattice constant from density: a = (M / (rho * N_A))^(1/3)
+variable  a            equal   (${mass_amu}/6.02214076e23/${rho}*1e24)^(1.0/3.0)
+
+print "Element: ${element} | mass: ${mass_amu} g/mol | rho: ${rho} g/cc | a: ${a} Ang"
+
+variable rho_str string ${rho}
+variable logname string log_melt_quench_${n_sc}x${n_sc}_rho_${rho_str}.lammps
+log ${logname} append
+
+timestep ${dt}
+
+# --- Build simple-cubic lattice ---
+lattice         sc ${a}
+region          box block 0 ${n_sc} 0 ${n_sc} 0 ${n_sc} units lattice
+create_box      1 box
+create_atoms    1 box
+mass            1 ${mass_amu}
+
+#==== define model ====#
+pair_style
+pair_coeff
+#======================#
+
+thermo         100
+thermo_style   custom step temp press pe ke etotal cpu
+
+neighbor       1.0 bin
+neigh_modify   every 1 delay 5 check yes
+
+# Small random displacement to break symmetry before melt
+displace_atoms all random 0.05 0.05 0.05 ${seed} units lattice
+velocity       all create ${T_melt} ${seed} mom yes rot yes dist gaussian
+
+# --- Output directory ---
+variable OUTDIR string melt_quench_${n_sc}x${n_sc}_rho${rho_str}
+shell if [ ! -d ${OUTDIR} ]; then mkdir ${OUTDIR}; fi
+
+
+# ===== Stage A: Melt at T_MELT =====
+fix  TLOG_A all ave/time 1 100 100 v_time_ps c_thermo_temp file ${OUTDIR}/melt_temp_vs_time.dat
+dump d_melt all dcd 100 ${OUTDIR}/melt_traj.dcd
+dump_modify d_melt sort id
+
+fix  fNVT all temp/csvr ${T_melt} ${T_melt} ${Tdamp} ${seed}
+fix  fNVE all nve
+run  ${n_melt}
+unfix fNVT
+unfix fNVE
+undump d_melt
+unfix TLOG_A
+
+write_data ${OUTDIR}/data_post_melt.data
+
+
+# ===== Stage B: Quench T_MELT → T_FINAL =====
+fix  TLOG_B all ave/time 1 100 100 v_time_ps c_thermo_temp file ${OUTDIR}/quench_temp_vs_time.dat
+dump d_quench all dcd 100 ${OUTDIR}/quench_traj.dcd
+dump_modify d_quench sort id
+
+fix  fNVT all temp/csvr ${T_melt} ${T_final} ${Tdamp} ${seed}
+fix  fNVE all nve
+run  ${n_quench}
+unfix fNVT
+unfix fNVE
+undump d_quench
+unfix TLOG_B
+
+write_data ${OUTDIR}/data_post_quench.data
+
+
+# ===== Stage C: Equilibrate at T_FINAL =====
+fix  TLOG_C all ave/time 1 100 100 v_time_ps c_thermo_temp file ${OUTDIR}/equi_temp_vs_time.dat
+dump d_equi all dcd 100 ${OUTDIR}/equi_traj.dcd
+dump_modify d_equi sort id
+
+compute msd_C all msd com yes
+fix MSD_C all ave/time 1 100 100 v_time_ps c_msd_C[1] c_msd_C[2] c_msd_C[3] c_msd_C[4] &
+    file ${OUTDIR}/equi_msd_vs_time.dat
+
+fix  fNVT all temp/csvr ${T_final} ${T_final} ${Tdamp} ${seed}
+fix  fNVE all nve
+run  ${n_equi}
+unfix fNVT
+unfix fNVE
+undump d_equi
+unfix TLOG_C
+unfix MSD_C
+
+write_restart ${OUTDIR}/final.restart
+write_data    ${OUTDIR}/final.data
+
+print "DONE melt-quench: rho=${rho_str} | T_melt=${T_melt} K → T_final=${T_final} K" append ${OUTDIR}/_done.txt

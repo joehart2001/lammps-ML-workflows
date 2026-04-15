@@ -1,0 +1,116 @@
+# npt.lmp — General NPT molecular dynamics
+#
+# Reads any LAMMPS data file, optionally minimises energy, then runs NPT MD
+# with a Nosé-Hoover barostat (isotropic). Useful for finding equilibrium
+# density, pressure sweeps, and preparing structures for NVT production.
+#
+# Runtime variables:
+#   STRUCTURE_FILE   path to input LAMMPS data file
+#   T_START          starting temperature (K)
+#   T_TARGET         target temperature (K)
+#   P_TARGET         target pressure (bar)
+#   DT_FS            timestep (fs)
+#   RAMP_PS          temperature ramp duration (ps)
+#   RUN_PS           NPT hold duration (ps)
+#   TDUMP_EVERY      dump every N steps
+#   THERMO_EVERY     thermo every N steps
+#   SEED             velocity RNG seed
+#   MINIMISE         1 = run energy minimisation first, 0 = skip
+
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+newton          on
+
+variable  structure_file  string  ${STRUCTURE_FILE}
+variable  T_start         equal   ${T_START}
+variable  T_target        equal   ${T_TARGET}
+variable  P_target        equal   ${P_TARGET}
+variable  dt_fs           equal   ${DT_FS}
+variable  ramp_ps         equal   ${RAMP_PS}
+variable  run_ps          equal   ${RUN_PS}
+variable  tdump_every     equal   ${TDUMP_EVERY}
+variable  thermo_every    equal   ${THERMO_EVERY}
+variable  seed            equal   ${SEED}
+variable  do_minimise     equal   ${MINIMISE}
+
+variable  dt              equal   ${dt_fs}*0.001
+variable  Tdamp           equal   ${dt}*10
+variable  Pdamp           equal   ${dt}*100
+variable  n_ramp          equal   ceil(${ramp_ps}/${dt})
+variable  n_run           equal   ceil(${run_ps}/${dt})
+variable  time_ps         equal   step*${dt}
+
+timestep  ${dt}
+
+read_data ${structure_file}
+
+#==== define model ====#
+pair_style
+pair_coeff
+#======================#
+
+thermo         ${thermo_every}
+thermo_style   custom step temp press pe ke etotal vol density cpu
+
+neighbor       1.0 bin
+neigh_modify   every 1 delay 5 check yes
+
+variable OUTDIR string "npt_outputs"
+shell if [ ! -d ${OUTDIR} ]; then mkdir ${OUTDIR}; fi
+
+variable logname string ${OUTDIR}/log_npt_T${T_target}_P${P_target}.lammps
+log ${logname} append
+
+# --- Optional energy minimisation ---
+if "${do_minimise} == 1" then &
+  "print 'Minimising...'" &
+  "min_style cg" &
+  "minimize 1e-6 1e-8 10000 100000"
+
+velocity all create ${T_start} ${seed} mom yes rot yes dist gaussian
+
+# --- NPT ramp: T_START → T_TARGET ---
+fix  TLOG_ramp all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_temp file ${OUTDIR}/ramp_temp_vs_time.dat
+fix  VLOG_ramp all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps vol           file ${OUTDIR}/ramp_vol_vs_time.dat
+dump d_ramp all dcd ${tdump_every} ${OUTDIR}/ramp_traj.dcd
+dump_modify d_ramp sort id
+
+fix  fNPT all npt temp ${T_start} ${T_target} ${Tdamp} iso ${P_target} ${P_target} ${Pdamp} drag 1.0
+
+run ${n_ramp}
+
+unfix fNPT
+undump d_ramp
+unfix TLOG_ramp
+unfix VLOG_ramp
+write_data ${OUTDIR}/data_post_ramp.data
+
+# --- NPT hold at T_TARGET ---
+fix  TLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_temp  file ${OUTDIR}/hold_temp_vs_time.dat
+fix  PLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_press file ${OUTDIR}/hold_press_vs_time.dat
+fix  VLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps vol            file ${OUTDIR}/hold_vol_vs_time.dat
+dump d_hold all dcd ${tdump_every} ${OUTDIR}/hold_traj.dcd
+dump_modify d_hold sort id
+
+compute msd_all all msd com yes
+fix MSD all ave/time 1 100 100 v_time_ps c_msd_all[1] c_msd_all[2] c_msd_all[3] c_msd_all[4] &
+    file ${OUTDIR}/hold_msd_vs_time.dat
+
+fix  fNPT all npt temp ${T_target} ${T_target} ${Tdamp} iso ${P_target} ${P_target} ${Pdamp} drag 1.0
+
+run ${n_run}
+
+unfix fNPT
+undump d_hold
+unfix TLOG_hold
+unfix PLOG_hold
+unfix VLOG_hold
+unfix MSD
+
+write_restart ${OUTDIR}/final.restart
+write_data    ${OUTDIR}/final.data
+
+print "DONE npt: T=${T_target} K | P=${P_target} bar | run=${run_ps} ps" append ${OUTDIR}/_done.txt

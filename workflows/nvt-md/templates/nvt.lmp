@@ -1,0 +1,90 @@
+# nvt.lmp — General NVT molecular dynamics
+#
+# Reads any LAMMPS data file and runs NVT MD with the Bussi-Donadio-Parrinello
+# velocity-rescaling thermostat (temp/csvr). Outputs: trajectory (DCD),
+# temperature log, MSD, and a final data file.
+#
+# Runtime variables (pass with -var or let generate.sh set them in the SLURM script):
+#   STRUCTURE_FILE   path to input LAMMPS data file
+#   T_START          starting temperature for optional ramp (K)
+#   T_TARGET         target/final temperature (K)
+#   DT_FS            timestep (fs)
+#   RUN_PS           total simulation time (ps)
+#   TDUMP_EVERY      dump trajectory every N steps (default 100)
+#   THERMO_EVERY     print thermo every N steps (default 100)
+#   SEED             velocity RNG seed
+
+# --- Units (metal): ps, Angstrom, eV, K, bar ---
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+newton          on
+
+# --- Parameters ---
+variable  structure_file  string  ${STRUCTURE_FILE}
+variable  T_start         equal   ${T_START}
+variable  T_target        equal   ${T_TARGET}
+variable  dt_fs           equal   ${DT_FS}
+variable  run_ps          equal   ${RUN_PS}
+variable  tdump_every     equal   ${TDUMP_EVERY}
+variable  thermo_every    equal   ${THERMO_EVERY}
+variable  seed            equal   ${SEED}
+
+variable  dt              equal   ${dt_fs}*0.001       # fs → ps
+variable  n_steps         equal   ceil(${run_ps}/${dt})
+variable  Tdamp           equal   ${dt}*100            # 100 × dt (ps)
+variable  time_ps         equal   step*${dt}
+
+timestep  ${dt}
+
+read_data ${structure_file}
+
+#==== define model ====#
+pair_style
+pair_coeff
+#======================#
+
+thermo         ${thermo_every}
+thermo_style   custom step temp press pe ke etotal cpu
+
+neighbor       1.0 bin
+neigh_modify   every 1 delay 5 check yes
+
+# --- Output directory ---
+variable OUTDIR string "nvt_outputs"
+shell if [ ! -d ${OUTDIR} ]; then mkdir ${OUTDIR}; fi
+
+variable logname string ${OUTDIR}/log_nvt_T${T_target}.lammps
+log ${logname} append
+
+# Initialise velocities
+velocity all create ${T_start} ${seed} mom yes rot yes dist gaussian
+
+# --- NVT run ---
+fix  TLOG all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_temp &
+     file ${OUTDIR}/temp_vs_time.dat
+
+dump d1 all dcd ${tdump_every} ${OUTDIR}/traj.dcd
+dump_modify d1 sort id
+
+compute  msd_all all msd com yes
+fix  MSD all ave/time 1 100 100 v_time_ps c_msd_all[1] c_msd_all[2] c_msd_all[3] c_msd_all[4] &
+     file ${OUTDIR}/msd_vs_time.dat
+
+fix  fNVT all temp/csvr ${T_start} ${T_target} ${Tdamp} ${seed}
+fix  fNVE all nve
+
+run  ${n_steps}
+
+unfix fNVT
+unfix fNVE
+undump d1
+unfix TLOG
+unfix MSD
+
+write_data   ${OUTDIR}/final.data
+write_restart ${OUTDIR}/final.restart
+
+print "DONE nvt: T=${T_target} K | dt=${dt_fs} fs | run=${run_ps} ps" append ${OUTDIR}/_done.txt

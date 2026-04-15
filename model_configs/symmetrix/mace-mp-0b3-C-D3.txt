@@ -1,0 +1,7 @@
+# MACE-MP-0b3 medium, symmetrix interface, D3 dispersion
+# Model format: JSON (no conversion needed)
+# Interface: symmetrix/mace (native C++/Kokkos)
+# Atom types: 1=C
+pair_style    hybrid/overlay symmetrix/mace dispersion/d3 bj pbe 10.0 8.0
+pair_coeff    * * symmetrix/mace /path/to/mace-mp-0b3-medium.json C
+pair_coeff    * * dispersion/d3 C

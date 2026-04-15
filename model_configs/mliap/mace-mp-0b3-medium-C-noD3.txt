@@ -1,0 +1,6 @@
+# MACE-MP-0b3 medium, mliap interface, no dispersion correction
+# Model: https://github.com/ACEsuit/mace-mp (0b3 release)
+# Interface: mliap unified (Python-bridged)
+# Atom types: 1=C
+pair_style    mliap unified /path/to/mace-mp-0b3-medium-mliap_lammps.pt 0
+pair_coeff    * * mliap C

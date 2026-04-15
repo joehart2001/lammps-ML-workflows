@@ -1,0 +1,7 @@
+# MACE-MP-0b3 medium, mliap interface, D3 dispersion (BJ damping, PBE params)
+# Model: https://github.com/ACEsuit/mace-mp (0b3 release)
+# Interface: mliap unified (Python-bridged)
+# Atom types: 1=C
+pair_style    hybrid/overlay mliap unified /path/to/mace-mp-0b3-medium-mliap_lammps.pt 0 dispersion/d3 bj pbe 10.0 8.0
+pair_coeff    * * mliap C
+pair_coeff    * * dispersion/d3 C

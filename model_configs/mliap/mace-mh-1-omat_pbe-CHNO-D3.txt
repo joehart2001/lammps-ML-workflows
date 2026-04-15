@@ -1,0 +1,8 @@
+# MACE-MH-1, head=omat_pbe, mliap interface, D3 dispersion, C+H+N+O
+# Multi-head model — specify head via mace_mp(head="omat_pbe") in Python.
+# This config is for the LAMMPS side only; head selection is handled at model conversion.
+# Interface: mliap unified (Python-bridged)
+# Atom types: 1=C  2=H  3=N  4=O
+pair_style    hybrid/overlay mliap unified /path/to/mace-mh-1-mliap_lammps.pt 0 dispersion/d3 bj pbe 10.0 8.0
+pair_coeff    * * mliap C H N O
+pair_coeff    * * dispersion/d3 C H N O
