@@ -1,31 +1,24 @@
-# lammps-mlip-workflows
+# lammps-ML-workflows
 
 A toolkit for running high-throughput LAMMPS molecular dynamics with machine learning interatomic potentials (MLIPs).
 
-**The core idea:** write your simulation protocol once as a parameterized template. A script generator injects your chosen MLIP backend, sweeps over parameters, and writes ready-to-submit SLURM job scripts — all without editing the input file by hand.
+**The core idea:** Create parameterised templates and say goodbye to losing track of millions of lammps scripts with slightly differnet parameters. A script generator injects your chosen MLIP backend, sweeps over parameters, and writes ready-to-submit SLURM job scripts — all without editing the input file by hand.
 
-Works with any MACE model (MACE-MP, MACE-OMAT, MACE-OFF, fine-tuned models) via the `mliap` or `symmetrix/mace` LAMMPS interfaces. Designed to be extended to other MLIPs.
+We show how to set this up for MACE models with MLIAP and Symmetrix (but works for any lammps pair style)
 
 ---
 
 ## Why this exists
 
-Running parameter sweeps with MLIPs in LAMMPS typically means:
-- Manually copying and editing input scripts for each density/temperature/composition
-- Hard-coding model paths into scripts that don't transfer between machines
-- Writing one-off SLURM submission scripts by hand
-
-This toolkit solves all three:
-
 | Problem | Solution |
 |---|---|
-| Manually editing inputs | Parameterized templates with `${VAR}` placeholders; bash generator renders them |
-| Hard-coded model paths | Model config files (2–3 lines) that are injected at generation time |
-| One-off SLURM scripts | Generator writes SLURM scripts + chained `submit.sh` for each replicate |
+| Copying `in.lmp` 50 times with slightly different temperatures/densities | Parameterized templates with `${VAR}` placeholders; generator renders them |
+| Model paths hard-coded in scripts that break on a different cluster | Centralised model config files injected at generation time + SLURM settings all in one place |
+| Writing a new SLURM script for every run, chaining jobs by hand | Generator writes all SLURM scripts and a `submit.sh` that chains stages with `--dependency` |
 
 ---
 
-## Workflows
+## Example Workflows
 
 | Workflow | Description |
 |---|---|
