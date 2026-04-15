@@ -39,11 +39,9 @@ All workflows follow the same pattern — add your own by copying an existing on
 
 ## Quick start
 
-### 1. Build LAMMPS with MLIP support
+**Prerequisites:** LAMMPS with MACE support. See the [MACE docs](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) (`mliap` interface) or the [Symmetrix docs](https://github.com/ACEsuit/lammps) (native C++ interface). See [`docs/hpc_setup.md`](docs/hpc_setup.md) for HPC-specific tips.
 
-See [`docs/hpc_setup.md`](docs/hpc_setup.md). For MACE, use either the `mliap` (standard LAMMPS + ML-IAP package) or `symmetrix/mace` (Symmetrix fork, faster on GPU) interface.
-
-### 2. Write a model config (2–3 lines)
+### 1. Write a model config (2–3 lines)
 
 ```bash
 cat > model_configs/mliap/my-model-C-D3.txt << 'EOF'
@@ -56,7 +54,7 @@ EOF
 
 Replace `/path/to/...` with your model file. That's the only system-specific thing you need to edit.
 
-### 3. Generate scripts
+### 2. Generate scripts
 
 ```bash
 cd workflows/nvt-md
@@ -67,7 +65,7 @@ bash generate.sh \
   --run-ps 100
 ```
 
-### 4. Submit
+### 3. Submit
 
 ```bash
 cd nvt_my_structure_300K/
@@ -104,13 +102,13 @@ See [`docs/model_configs.md`](docs/model_configs.md) for full details.
 
 ## Supported MLIP interfaces
 
-| Interface | `pair_style` | Notes |
+| Interface | `pair_style` | Docs |
 |---|---|---|
-| `mliap` | `mliap unified ...` | Python-bridged. Works with standard LAMMPS + `ML-IAP`, `PYTHON`, `ML-SNAP` packages. |
-| `symmetrix/mace` | `symmetrix/mace ...` | Native C++/Kokkos. Requires Symmetrix LAMMPS fork. Faster on GPU. |
-| Any other | user-defined | Write your own `model_configs/*.txt` — the injection pattern works with any `pair_style`. |
+| `mliap` | `mliap unified ...` | [MACE LAMMPS guide](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) · [ML-IAP guide](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html) |
+| `symmetrix/mace` | `symmetrix/mace ...` | [Symmetrix / ACEsuit LAMMPS fork](https://github.com/ACEsuit/lammps) |
+| Any other | user-defined | Write your own `model_configs/*.txt` — the injection pattern works with any `pair_style` |
 
-Both interfaces support the D3 dispersion correction via `hybrid/overlay` with `dispersion/d3`.
+Both interfaces support D3 dispersion via `hybrid/overlay` with `dispersion/d3`.
 
 ---
 
@@ -136,19 +134,10 @@ lammps-mlip-workflows/
 
 ---
 
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). Adding a model config or a new workflow template is the most useful contribution.
-
----
-
 ## Citing MACE models
 
-If you use MACE in published work, cite the relevant model:
-
-- MACE-MP: [Batatia et al., 2023](https://arxiv.org/abs/2401.00096)
-- MACE-OMAT: [Barroso-Luque et al., 2024](https://arxiv.org/abs/2410.12771)
-- MACE-OFF: [Kovacs et al., 2023](https://arxiv.org/abs/2312.15211)
+- [MACE repo](https://github.com/ACEsuit/mace)
+- [Symmetrix repo](https://github.com/wcwitt/symmetrix)
 
 ---
 
