@@ -93,7 +93,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LMP_TPL="${SCRIPT_DIR}/npt_template.lmp"
 [[ -f "${LMP_TPL}" ]] || { echo "ERROR: template not found: ${LMP_TPL}" >&2; exit 1; }
 
-MODEL_BLOCK="$(cat "${MODEL_CONFIG}")"
 STRUCT_BASENAME="$(basename "${STRUCTURE_FILE}" .data)"
 STRUCTURE_ABS="$(cd "$(dirname "${STRUCTURE_FILE}")" && pwd)/$(basename "${STRUCTURE_FILE}")"
 
@@ -107,9 +106,9 @@ SLURM_OUT="0_slurm_npt.slurm"
 
 inject_model_block() {
   local src="$1" dst="$2"
-  awk -v model_block="${MODEL_BLOCK}" '
-    BEGIN { n = split(model_block, lines, "\n"); in_block = 0 }
-    /^#==== define model ====#$/ { print; for(i=1;i<=n;i++) print lines[i]; in_block=1; next }
+  awk -v model_config="${MODEL_CONFIG}" '
+    BEGIN { in_block = 0 }
+    /^#==== define model ====#$/ { print; while ((getline line < model_config) > 0) print line; in_block=1; next }
     in_block && /^#======================#[[:space:]]*$/ { print; in_block=0; next }
     in_block { next }
     { print }

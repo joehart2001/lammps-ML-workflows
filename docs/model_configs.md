@@ -86,16 +86,11 @@ Put mliap configs in `model_configs/mliap/` and symmetrix configs in `model_conf
 ## How `generate.sh` injects the block
 
 ```bash
-MODEL_BLOCK="$(cat "${MODEL_CONFIG_FILE}")"
-
-awk -v model_block="${MODEL_BLOCK}" '
-  BEGIN {
-    n = split(model_block, lines, "\n")
-    in_model_block = 0
-  }
+awk -v model_config="${MODEL_CONFIG}" '
+  BEGIN { in_model_block = 0 }
   /^#==== define model ====#$/ {
     print
-    for (i = 1; i <= n; i++) print lines[i]
+    while ((getline line < model_config) > 0) print line
     in_model_block = 1
     next
   }

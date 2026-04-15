@@ -32,7 +32,7 @@ All workflows follow the same pattern — add your own by copying an existing on
 
 ## Quick start
 
-**Prerequisites:** LAMMPS with MACE support. See the [MACE docs](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) and setup with [mliap](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html) (GPU) or [Symmetrix](https://github.com/ACEsuit/lammps) (GPU or CPU).
+**Prerequisites:** LAMMPS with MACE support. See the [MACE docs](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) and setup with [mliap](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html) (GPU) or [Symmetrix](https://github.com/wcwitt/symmetrix) (GPU or CPU).
 
 ### 1. Clone the repo
 
@@ -103,7 +103,7 @@ See [`docs/model_configs.md`](docs/model_configs.md) for full details.
 | Interface | `pair_style` | Docs |
 |---|---|---|
 | `mliap` | `mliap unified ...` | [MACE LAMMPS guide](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) · [ML-IAP guide](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html) |
-| `symmetrix/mace` | `symmetrix/mace ...` | [Symmetrix / ACEsuit LAMMPS fork](https://github.com/ACEsuit/lammps) |
+| `symmetrix/mace` | `symmetrix/mace ...` | [Symmetrix](https://github.com/wcwitt/symmetrix) |
 | Any other | user-defined | Write your own `model_configs/*.txt` — the injection pattern works with any `pair_style` |
 
 Both interfaces support D3 dispersion via `hybrid/overlay` with `dispersion/d3`.
