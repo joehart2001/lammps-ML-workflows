@@ -1,0 +1,6 @@
+# mace-mp-0b3-medium, mliap interface, D3 dispersion, C only
+# Atom types: 1=C
+# Replace /path/to/... with the actual model path on your cluster.
+pair_style    hybrid/overlay mliap unified /path/to/mace-mp-0b3-medium.model-mliap_lammps.pt 0 dispersion/d3 bj pbe 10.0 8.0
+pair_coeff    * * mliap C
+pair_coeff    * * dispersion/d3 C
