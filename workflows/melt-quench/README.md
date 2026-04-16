@@ -2,13 +2,13 @@
 
 Generate amorphous or liquid-quenched structures from a randomised cubic lattice.
 
-This workflow shows how to chain multiple dependent SLURM jobs using `sbatch --dependency`. It is a reference implementation for multi-stage workflows — the same pattern applies to shock loading, grain boundary generation, or any protocol that requires sequential jobs.
+This workflow runs a multi-stage protocol inside one LAMMPS input: melt, quench, then equilibrate from a randomised cubic lattice.
 
 **Stages:**
 1. **Melt** — NVT at high temperature to destroy initial order
 2. **Quench** — NVT ramp from melt temperature to target temperature
 
-A restart file is saved between stages so they can be submitted as dependent SLURM jobs, and each stage can be re-run independently.
+A restart file is saved at the end of the workflow, along with intermediate `write_data` snapshots after melt and quench.
 
 ---
 
@@ -58,9 +58,6 @@ bash generate.sh \
 
 ## Extending this workflow
 
-To add a third stage (e.g. an NVT anneal after the quench), copy the pattern:
-1. Add a new LAMMPS template that reads the restart from the previous stage
-2. Add a third SLURM script block in `generate.sh`
-3. Extend `submit.sh` with `sbatch --dependency=afterany:${JOBID_QUENCH}`
+To add another internal stage (e.g. an NVT anneal after the quench), extend `melt-quench_template.lmp` with another block that continues from the current state and writes any extra outputs you need.
 
-See the [`nvt-md`](../nvt-md/) workflow for the NVT template.
+If you prefer separate SLURM stages, use the older dependency-chained template pattern and split the protocol across multiple generated scripts.

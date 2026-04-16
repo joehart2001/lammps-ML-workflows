@@ -6,7 +6,7 @@ This guide gets you from zero to a submitted SLURM job in four steps.
 
 ## Step 1: Build LAMMPS with MLIP support
 
-See [`hpc_setup.md`](hpc_setup.md). For MACE, the recommended path is the `mliap` interface (standard LAMMPS + ML-IAP package + Kokkos for GPU).
+See [`hpc_setup.md`](hpc_setup.md). For MACE, the recommended path is the `mliap` interface (standard LAMMPS + ML-IAP package + Kokkos for GPU). The current inputs also assume your LAMMPS build provides `dump dcd`, and the NVT / melt-quench workflows use `fix temp/csvr`.
 
 ---
 
@@ -33,7 +33,7 @@ pair_coeff    * * dispersion/d3 C
 EOF
 ```
 
-Replace `/path/to/...` with the actual path on your cluster. That's the only system-specific edit.
+Replace `/path/to/...` with the actual path on your cluster. You will also need to set the SLURM/runtime settings for your environment.
 
 ---
 

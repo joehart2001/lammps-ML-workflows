@@ -1,7 +1,7 @@
-# npt.lmp — General NPT molecular dynamics
+# npt.lmp - General NPT molecular dynamics
 #
 # Reads any LAMMPS data file, optionally minimises energy, then runs NPT MD
-# with a Nosé-Hoover barostat (isotropic). Useful for finding equilibrium
+# with a Nose-Hoover barostat (isotropic). Useful for finding equilibrium
 # density, pressure sweeps, and preparing structures for NVT production.
 #
 # Runtime variables:
@@ -46,9 +46,10 @@ variable  time_ps         equal   step*${dt}
 timestep  ${dt}
 
 read_data ${structure_file}
+variable  boxvol          equal   vol
 
 #==== define model ====#
-# DO NOT EDIT — pair_style and pair_coeff are injected here automatically
+# DO NOT EDIT - pair_style and pair_coeff are injected here automatically
 # by generate.sh from your --model-config file. See model_configs/ for examples.
 pair_style
 pair_coeff
@@ -74,9 +75,9 @@ if "${do_minimise} == 1" then &
 
 velocity all create ${T_start} ${seed} mom yes rot yes dist gaussian
 
-# --- NPT ramp: T_START → T_TARGET ---
+# --- NPT ramp: T_START -> T_TARGET ---
 fix  TLOG_ramp all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_temp file ${OUTDIR}/ramp_temp_vs_time.dat
-fix  VLOG_ramp all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps vol           file ${OUTDIR}/ramp_vol_vs_time.dat
+fix  VLOG_ramp all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps v_boxvol      file ${OUTDIR}/ramp_vol_vs_time.dat
 dump d_ramp all dcd ${tdump_every} ${OUTDIR}/ramp_traj.dcd
 dump_modify d_ramp sort id
 
@@ -93,7 +94,7 @@ write_data ${OUTDIR}/data_post_ramp.data
 # --- NPT hold at T_TARGET ---
 fix  TLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_temp  file ${OUTDIR}/hold_temp_vs_time.dat
 fix  PLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps c_thermo_press file ${OUTDIR}/hold_press_vs_time.dat
-fix  VLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps vol            file ${OUTDIR}/hold_vol_vs_time.dat
+fix  VLOG_hold all ave/time 1 ${thermo_every} ${thermo_every} v_time_ps v_boxvol       file ${OUTDIR}/hold_vol_vs_time.dat
 dump d_hold all dcd ${tdump_every} ${OUTDIR}/hold_traj.dcd
 dump_modify d_hold sort id
 

@@ -35,11 +35,13 @@ srun lmp -k on g 1 -sf kk -pk kokkos newton on neigh half -in script.lmp ...
 - `-sf kk` — use Kokkos-accelerated styles where available
 - `-pk kokkos newton on neigh half` — standard Kokkos settings for pair potentials
 
-For CPU-only runs (no Kokkos), replace with:
+For CPU-only runs (no Kokkos), replace the `srun` line with:
 
 ```bash
 srun lmp -in script.lmp -var ...
 ```
+
+You will also need to remove or change the generated `#SBATCH --gpus=1` line, since the current generators assume one GPU by default.
 
 ---
 
@@ -60,16 +62,16 @@ srun --ntasks=8 lmp -in script.lmp ...
 
 ---
 
-## Job dependency chains
+## Multi-stage jobs
 
-`submit.sh` (generated inside each `run_i/`) chains stages automatically:
+The current repo submits one SLURM script per run. The `melt-quench` workflow implements its stages inside a single LAMMPS input rather than chaining multiple `sbatch` jobs.
+
+If you want separate SLURM stages, use the older template pattern and add dependencies explicitly, e.g.:
 
 ```bash
 JOBID_A=$(sbatch stage_A.slurm | awk '{print $4}')
 JOBID_B=$(sbatch --dependency=afterany:${JOBID_A} stage_B.slurm | awk '{print $4}')
 ```
-
-`afterany` means stage B runs even if stage A fails (useful for debugging). To use `afterok` (only run B if A succeeded), change this in `generate.sh`.
 
 ---
 

@@ -14,7 +14,7 @@ We show how to set this up for MACE models with MLIAP and Symmetrix (but works f
 |---|---|
 | Copying `in.lmp` 50 times with slightly different temperatures/densities | Parameterized templates with `${VAR}` placeholders; generator renders them |
 | Model paths hard-coded in scripts that break on a different cluster | Centralised model config files injected at generation time + SLURM settings all in one place |
-| Writing a new SLURM script for every run, chaining jobs by hand | Generator writes all SLURM scripts and a `submit.sh` that chains stages with `--dependency` |
+| Writing a new SLURM script for every run and submitting them by hand | Generator writes per-run SLURM scripts plus a `launch_all_runs.sh` helper for each sweep |
 
 ---
 
@@ -24,7 +24,7 @@ We show how to set this up for MACE models with MLIAP and Symmetrix (but works f
 |---|---|
 | [`nvt-md`](workflows/nvt-md/) | NVT molecular dynamics from any input structure. Single configurable stage. |
 | [`npt-md`](workflows/npt-md/) | NPT molecular dynamics. Controls temperature and pressure; useful for finding equilibrium density or performing pressure sweeps. |
-| [`melt-quench`](workflows/melt-quench/) | Multi-stage example: melt a random lattice, quench, and anneal. Shows how to chain dependent SLURM jobs. |
+| [`melt-quench`](workflows/melt-quench/) | Multi-stage example within one LAMMPS input: melt a random lattice, quench, and equilibrate. |
 
 All workflows follow the same pattern — add your own by copying an existing one.
 
@@ -50,7 +50,7 @@ pair_coeff    * * mliap C H O
 pair_coeff    * * dispersion/d3 C H O
 ```
 
-Replace `/path/to/...` with your model file. That's the only system-specific thing you need to edit.
+Replace `/path/to/...` with your model file. You will also need to set the SLURM/runtime settings for your cluster.
 
 ### 3. Run a parameter sweep
 
@@ -66,7 +66,7 @@ This calls `generate.sh` once per parameter value, writing a separate output dir
 ### 4. Submit
 
 ```bash
-cd runs/temperature_sweep/nvt_my_structure_300K/
+cd runs/temperature_sweep/nvt_my_structure_300K_100ps/
 ./launch_all_runs.sh
 ```
 
@@ -113,9 +113,8 @@ Both interfaces support D3 dispersion via `hybrid/overlay` with `dispersion/d3`.
 ## Repository structure
 
 ```
-lammps-mlip-workflows/
+lammps-ML-workflows/
 ├── README.md
-├── CONTRIBUTING.md
 ├── LICENSE
 ├── docs/
 │   ├── model_configs.md      ← injection pattern explained

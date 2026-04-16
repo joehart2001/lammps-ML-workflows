@@ -94,12 +94,13 @@ LMP_TPL="${SCRIPT_DIR}/npt_template.lmp"
 [[ -f "${LMP_TPL}" ]] || { echo "ERROR: template not found: ${LMP_TPL}" >&2; exit 1; }
 
 STRUCT_BASENAME="$(basename "${STRUCTURE_FILE}" .data)"
-STRUCTURE_ABS="$(cd "$(dirname "${STRUCTURE_FILE}")" && pwd)/$(basename "${STRUCTURE_FILE}")"
+STRUCTURE_NAME="$(basename "${STRUCTURE_FILE}")"
 
 DIR_NAME="npt_${STRUCT_BASENAME}_${T_TARGET}K_${P_TARGET}bar"
 BASE_OUTDIR="${OUTDIR:-.}"
 OUTDIR_FULL="${BASE_OUTDIR}/${DIR_NAME}"
 mkdir -p "${OUTDIR_FULL}"
+cp "${STRUCTURE_FILE}" "${OUTDIR_FULL}/${STRUCTURE_NAME}"
 
 LMP_OUT="0_npt.lmp"
 SLURM_OUT="0_slurm_npt.slurm"
@@ -157,7 +158,7 @@ cd "\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 srun ${LMP_EXE} \\
   -k on g 1 -sf kk -pk kokkos newton on neigh half \\
   -in "${LMP_OUT}" \\
-  -var STRUCTURE_FILE "${STRUCTURE_ABS}" \\
+  -var STRUCTURE_FILE "../${STRUCTURE_NAME}" \\
   -var T_START "${T_START}" \\
   -var T_TARGET "${T_TARGET}" \\
   -var P_TARGET "${P_TARGET}" \\

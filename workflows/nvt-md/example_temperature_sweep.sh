@@ -7,13 +7,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GEN="${SCRIPT_DIR}/generate.sh"
 
 # ---- Configuration --------------------------------------------------
-MODEL_CONFIG="${SCRIPT_DIR}/../../../model_configs/mliap/mace-mp-0b3-medium-C-D3.txt"
+MODEL_CONFIG="${SCRIPT_DIR}/../../model_configs/mliap/mace-mp-0b3-medium-C-D3.txt"
 STRUCTURE="/path/to/your_structure.data"  # ← edit this
 RUN_PS="100"       # ps per temperature
 DT_FS="1.0"        # fs
 N_RUNS="3"         # independent replicates per temperature
 BASE_SEED="10001"
-OUTDIR="${SCRIPT_DIR}/../../../runs/temperature_sweep"
+OUTDIR="${SCRIPT_DIR}/../../runs/temperature_sweep"
 
 # Temperatures to sweep (K)
 TEMPERATURES=(300 500 1000 1500 2000)

@@ -1,7 +1,7 @@
-# melt-quench.lmp — Melt a random SC lattice and quench to T_FINAL.
+# melt-quench.lmp - Melt a random SC lattice and quench to T_FINAL.
 #
 # Stage A: NVT hold at T_MELT for MELT_PS ps
-# Stage B: NVT ramp T_MELT → T_FINAL at QUENCH_RATE K/ps
+# Stage B: NVT ramp T_MELT -> T_FINAL at QUENCH_RATE K/ps
 # Stage C: NVT hold at T_FINAL for EQUI_PS ps, save restart
 #
 # Runtime variables:
@@ -63,7 +63,7 @@ create_atoms    1 box
 mass            1 ${mass_amu}
 
 #==== define model ====#
-# DO NOT EDIT — pair_style and pair_coeff are injected here automatically
+# DO NOT EDIT - pair_style and pair_coeff are injected here automatically
 # by generate.sh from your --model-config file. See model_configs/ for examples.
 pair_style
 pair_coeff
@@ -100,7 +100,7 @@ unfix TLOG_A
 write_data ${OUTDIR}/data_post_melt.data
 
 
-# ===== Stage B: Quench T_MELT → T_FINAL =====
+# ===== Stage B: Quench T_MELT -> T_FINAL =====
 fix  TLOG_B all ave/time 1 100 100 v_time_ps c_thermo_temp file ${OUTDIR}/quench_temp_vs_time.dat
 dump d_quench all dcd 100 ${OUTDIR}/quench_traj.dcd
 dump_modify d_quench sort id
@@ -137,4 +137,4 @@ unfix MSD_C
 write_restart ${OUTDIR}/final.restart
 write_data    ${OUTDIR}/final.data
 
-print "DONE melt-quench: rho=${rho_str} | T_melt=${T_melt} K → T_final=${T_final} K" append ${OUTDIR}/_done.txt
+print "DONE melt-quench: rho=${rho_str} | T_melt=${T_melt} K -> T_final=${T_final} K" append ${OUTDIR}/_done.txt

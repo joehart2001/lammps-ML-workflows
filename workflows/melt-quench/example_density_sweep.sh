@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GEN="${SCRIPT_DIR}/generate.sh"
 
 # ---- Configuration --------------------------------------------------
-MODEL_CONFIG="${SCRIPT_DIR}/../../../model_configs/mliap/mace-mp-0b3-medium-C-D3.txt"
+MODEL_CONFIG="${SCRIPT_DIR}/../../model_configs/mliap/mace-mp-0b3-medium-C-D3.txt"
 ELEMENT="C"
 MASS="12.011"    # g/mol
 T_MELT="8000"    # K
@@ -19,7 +19,7 @@ SUPERCELL="10"   # 10x10x10 = 1000 atoms
 DT_FS="0.5"
 N_RUNS="3"
 BASE_SEED="10001"
-OUTDIR="${SCRIPT_DIR}/../../../runs/melt_quench_density_sweep"
+OUTDIR="${SCRIPT_DIR}/../../runs/melt_quench_density_sweep"
 
 # Densities to sweep (g/cc)
 RHOS=(1.0 1.5 2.0 2.5 3.0 3.5)

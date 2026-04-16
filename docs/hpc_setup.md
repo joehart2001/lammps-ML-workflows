@@ -1,6 +1,6 @@
 # HPC Setup Notes
 
-This repo assumes LAMMPS is already built with MACE support. For installation, follow the official docs:
+This repo assumes LAMMPS is already built with MACE support. The current templates also use `dump dcd`, and the NVT / melt-quench workflows use `fix temp/csvr`, so make sure your LAMMPS build includes those styles too. For installation, follow the official docs:
 
 - **MACE with mliap interface** — [mace-docs: LAMMPS](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html) · [ML-IAP guide](https://mace-docs.readthedocs.io/en/latest/guide/lammps_mliap.html)
 - **Symmetrix/mace interface** — [ACEsuit LAMMPS fork](https://github.com/ACEsuit/lammps)
@@ -15,6 +15,8 @@ The generated SLURM scripts need three things:
 1. **A working LAMMPS executable** — set via `LMP_EXE` env var or the settings block at the top of `generate.sh`
 2. **A Python environment with MACE installed** — set via `VENV_ACTIVATE`
 3. **Any required module loads** — set via `MODULES_LOAD`
+
+For CPU-only runs, you will also need to remove the default GPU-specific SLURM / Kokkos lines from the generated scripts or adapt the generator settings for your cluster.
 
 ```bash
 export LMP_EXE=/path/to/lmp
