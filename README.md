@@ -37,7 +37,7 @@ All workflows follow the same pattern — add your own by copying an existing on
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/lammps-ML-workflows.git
+git clone https://github.com/joehart2001/lammps-ML-workflows.git
 cd lammps-ML-workflows
 ```
 
